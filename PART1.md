@@ -2,50 +2,46 @@
 
 ## Video Demo
 
-Please provide the YouTube link to your [Video Demo](https://youtube.com).
+YouTube link: [Video Demo](https://www.youtube.com/watch?v=DGAXANWANtw).
 
 ## Minimum Requirements
 
 ### Completed
 
-List all the features completed.
-
-1. Cool Feature #1
-2. Cool Feature #2
-3. *add more*
+1. Game setup
+2. Show and initialise board with random objects
+3. Game characters' attributes, movement and attack
+4. Multiple zombies
+5. Game controls
 
 ### To Do
 
-List all the features not yet done. Remove this section if there is no incomplete requirements.
-
-1. Cool Feature #1
-2. *add more*
+1. Saving and Loading Game Files
 
 ## Additional Features
 
-Describe the additional features that has been implemented.
+None.
 
 ## Contributions
 
-List down the contribution of each group members.
+### Ho Tsi Qi
 
-For example:
+1. Game setup
+2. Show board
+3. Movement & Attack of Zombies
 
-### Tony Stark
+### Lo Pei Qin
 
-1. Randomly generate game board.
-2. *add more*
+1. Define Alien & Zombie Class
+2. Initialise board with random objects
+3. Initialise Zombies' attributes, location with random value
 
-### Steve Rogers
+### Law Chin Keat
 
-1. Zombie movement and attack behaviour.
-2. *add more*
-
-### Dr. Strange
-
-1. Implement all game objects.
-2. *add more*
+1. Game controls
+2. Movement & attack of Alien
 
 ## Problems Encountered & Solutions
 
-Describe the problems encountered and provide the solutions / plan for the solutions.
+Problem: Not familiar with Object-Oriented Programming
+Solution: Study from lecture note and other online resources
