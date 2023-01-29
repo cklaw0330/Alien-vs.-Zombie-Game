@@ -172,7 +172,11 @@ int curr = 0;
 Alien alien;
 ZombieVector zombies;
 
+bool isGameEnd = false;
+bool isPlayAgain = false;
+
 char objects[] = {'<','^','v', '>', 'r', 'h', 'p', ' '};
+char arrows[] = {'<','^','v', '>'};
 
 int ClearScreen()
 {
@@ -434,16 +438,433 @@ void showStatus(int curr)
     }
 }
 
+bool checkIsAllZombieDead()
+{
+    for(int i=0; i<zombieCount; i++)
+    {
+        if(zombies[i].isAlive())
+        return false;
+    }
+
+    return true;
+}
+
+bool checkValidMoves(int r, int c)
+{
+    if (r >= 0 && r <= row-1 && c >=0 && c<= col -1)
+    {
+        return true;
+    }
+
+    else return false;
+}
+
+bool checkIsZombie(char c)
+{
+    char zombiesCode[] = {'1','2','3','4','5','6','7','8','9'};
+    return checkInArray(c, zombiesCode,9);
+}
+
+void resetTrail()
+{
+    for(int i=0; i<row; i++)
+    {
+        for(int j=0; j<col; j++)
+        {
+            if(board[i][j] == '.')
+            {
+                board[i][j] = getRandomObject();
+            }
+        }
+    }
+
+}
+
+void moveAlien(string direction)
+{
+    int currRow = alien.getRow();
+    int currCol = alien.getCol();
+    int newRow;
+    int newCol;
+
+    while(true)
+    {
+        ClearScreen();
+        drawMap();
+        cout << endl;
+        showStatus(0);
+        cout << endl;
+
+        if(direction == "up")
+        {
+            newRow = currRow -1;
+            newCol = currCol;
+        }
+
+        else if(direction == "down")
+        {
+            newRow = currRow + 1;
+            newCol = currCol;
+        }
+
+        else if(direction == "left")
+        {
+            newRow = currRow;
+            newCol = currCol-1;
+        }
+
+        else if(direction == "right")
+        {
+            newRow = currRow;
+            newCol = currCol+1;
+        }
+
+        if (!checkValidMoves(newRow,newCol))
+        {
+            cout <<"Alien hits a border.\n";
+            Pause();
+            break;
+        }
+
+
+        if (board[newRow][newCol] == '>' || board[newRow][newCol] == '<' || board[newRow][newCol] == '^' || board[newRow][newCol] == 'v')
+        {
+            char dirSymbol = board[newRow][newCol];
+            switch (dirSymbol)
+            {
+            case '^':
+                direction = "up";
+                break;
+
+            case 'v':
+                direction = "down";
+                break;
+
+            case '<':
+                direction = "left";
+                break;
+
+            case '>':
+                direction = "right";
+                break;
+            
+            default:
+                break;
+            }
+
+            cout << "Alien finds an arrow.\n";
+            cout << "Alien's attack is increased by 20.\n";
+
+            alien.addAttack(20);
+            board[currRow][currCol] = '.';
+            alien.setLocation(newRow,newCol);
+            board[newRow][newCol] = 'A';
+            currRow = newRow;
+            currCol = newCol;
+
+        }
+
+        else if(board[newRow][newCol] == 'h')
+        {
+            cout << "Alien finds a health pack\nAlien's life increased by 20." << endl;
+            alien.addLife(20);
+            board[currRow][currCol] = '.';
+            alien.setLocation(newRow,newCol);
+            board[newRow][newCol] = 'A';
+            currRow = newRow;
+            currCol = newCol;
+        }
+
+        else if(board[newRow][newCol] == 'p')
+        {
+            int nearestZombie = -1;
+            int nearestDistance = INT_MAX;
+
+            for (int z=0; z<zombieCount; z++)
+            {
+                int distance = abs(zombies[z].getCol() - alien.getCol()) + abs(zombies[z].getRow()-alien.getRow());
+
+                if(distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestZombie = z;
+                } 
+            }
+            zombies[nearestZombie].deductLife(10);
+            cout << "Alien finds a pod." << endl;
+            cout << "Zombie " << nearestZombie + 1 << " receives a damage of 10." << endl;
+            if (zombies[nearestZombie].isAlive())
+            {
+                cout << "Zombie is still alive" << endl;
+            }
+            else
+            {
+                cout << "Zombie " << nearestZombie + 1 << " defeated" << endl;
+                board[zombies[nearestZombie].getRow()][zombies[nearestZombie].getCol()] = ' ';
+                
+            }
+
+            board[currRow][currCol] = '.';
+            alien.setLocation(newRow,newCol);
+            board[newRow][newCol] = 'A';
+            currRow = newRow;
+            currCol = newCol;
+        }
+
+        else if(checkIsZombie(board[newRow][newCol]))
+        {
+            int zombieIndex = int(board[newRow][newCol]) - '0' - 1;
+
+            zombies[zombieIndex].deductLife(alien.getAttack());
+
+            cout << "Alien attacks Zombie " << zombieIndex+1 << endl;
+            cout << "Zombie " << zombieIndex + 1 << " receives a damage of " << alien.getAttack() << ".\n";
+
+            if(zombies[zombieIndex].isAlive())
+            {
+                cout << "Zombie " << zombieIndex + 1 << " still alive.\n";
+                currRow = newRow;
+                currCol = newCol;
+                Pause();
+                break;
+            }
+
+            else
+            {
+
+                cout << "Zombie " << zombieIndex + 1 << " is dead.\n";
+
+                board[currRow][currCol] = '.';
+                alien.setLocation(newRow,newCol);
+                board[newRow][newCol] = 'A';
+                currRow = newRow;
+                currCol = newCol;
+            }
+            
+        }
+
+        else if (board[newRow][newCol] == ' ' || board[newRow][newCol] == '.')
+        {
+            cout << "Alien finds an empty space. \n";
+            board[currRow][currCol] = '.';
+            alien.setLocation(newRow,newCol);
+            board[newRow][newCol] = 'A';
+            currRow = newRow;
+            currCol = newCol;
+        }
+
+        else if (board[newRow][newCol] == 'r')
+        {
+            string objectString;
+            cout << "Alien stumbles upon a rock.\n";
+            while(board[newRow][newCol] == 'r')
+            {
+                board[newRow][newCol] = getRandomObject();
+            }
+            
+            switch (board[newRow][newCol])
+            {
+            case 'h':
+                objectString = "a health";
+                break;
+            case 'p':
+                objectString = "a pod";
+                break;
+            case ' ':
+                objectString = "an empty space";
+                break;
+            default:
+                objectString = "an arrow";
+                break;
+            }
+            cout << "Alien discover " << objectString << " beneath the rock.\n";
+            Pause();
+            break;
+        }
+
+        
+        Pause();
+    }
+
+    ClearScreen();
+    drawMap();
+    cout << endl;
+    showStatus(0);
+    cout << endl;
+    cout << "Alien turn ends. The trail is reset.\n";
+    alien.resetAttack();
+    resetTrail();
+    Pause();
+    if(checkIsAllZombieDead())
+    {
+        isGameEnd = true;
+
+        cout << "Alien wins." << endl;
+        while(true)
+        {
+            cout << "Play again? (y/n)> " ;
+            char input;
+            cin >> input;
+
+            if (input == 'y' || input == 'Y')
+            {
+                isPlayAgain = true;
+                break;
+            }
+
+            else if (input == 'n' || input == 'N')
+            {
+                isPlayAgain = false;
+                break;
+            }
+
+            else
+            {
+                cout << "Invalid input, try again.\n";
+            }
+        }
+
+    }
+    
+}
+
+void switchArrow()
+{
+    cout << "Enter row, column, direction: ";
+    int r,c;
+    string direction;
+    cin >> r >> c >> direction;
+
+    r--;
+    c--;
+
+    if(checkInArray(board[r][c],arrows,4))
+    {
+        if(direction == "up" || direction == "down" || direction == "left" || direction == "right")
+        {
+            if (direction == "up")
+            {
+                cout << "Arrow " << board[r][c] << " is switch to ^." << endl;
+                board[r][c] = '^';
+            }
+
+            else if (direction == "down")
+            {
+                cout << "Arrow " << board[r][c] << " is switch to v." << endl;
+                board[r][c] = 'v';
+            }
+
+            else if (direction == "left")
+            {
+                cout << "Arrow " << board[r][c] << " is switch to <." << endl;
+                board[r][c] = '<';
+            }
+
+            else
+            {
+                cout << "Arrow " << board[r][c] << " is switch to >." << endl;
+                board[r][c] = '>';
+            }
+        }
+        else
+        {
+            cout << "Invalid direction input. " << endl;
+        }
+    }
+    else
+    {
+        cout << "The object located in row and column given is not an arrow. Try again." << endl;
+    }
+}
+
+
 int main()
 {
     srand(time(0));
 
-    ClearScreen();
-    gameSetup();
+    while(true)
+    {
+        isGameEnd = false;
+        isPlayAgain = false;
+        alien = Alien();
+        ClearScreen();
+        gameSetup();
 
-    ClearScreen();
-    drawMap();
-    showStatus(curr);
+        string input;
 
+        while(true)
+        {
+            ClearScreen();
+            drawMap();
+            cout << endl;
+            showStatus(0);
+            cout << endl << "command> ";
+            cin >> input;
+
+            if(input == "up" || input == "down" || input == "left" || input == "right")
+            {
+                moveAlien(input);
+                if (isGameEnd) break;
+                
+            }
+
+            else if(input == "arrow")
+            {
+                switchArrow();
+                Pause();
+            }
+
+            else if (input == "help")
+            {
+                cout << "Commands\n";
+                cout << "1. up      - Move up.\n";
+                cout << "2. down    - Move down.\n";
+                cout << "3. left    - Move left.\n";
+                cout << "4. right   - Move right.\n";
+                cout << "5. arrow   - Change the direction of an arrow.\n";
+                cout << "6. help    - Display these user commands.\n";
+                cout << "7. save    - Save the game.\n";
+                cout << "8. load    - Load a game.\n";
+                cout << "9. quit    - Quit the game.\n";
+                Pause();
+            }
+
+            else if (input == "save")
+            {
+
+            }
+
+            else if (input == "load")
+            {
+
+            }
+
+            else if (input == "quit")
+            {
+                cout << "Are you sure you want to quit the game? (y/n): ";
+                string confirm;
+                cin >> confirm;
+                if(confirm == "y" || confirm == "Y")
+                {
+                    cout << "Game quit. " << endl;
+                    isGameEnd = true;
+                    isPlayAgain = false;
+                    break;
+                }
+            }
+
+            else
+            {
+                cout << "Invalid input. Use 'help' command to know about available commands.\n";
+                Pause();
+            }
+
+        }
+
+        if(! isPlayAgain)
+        {
+            break;
+        }
+    }
     return 0;
 }
