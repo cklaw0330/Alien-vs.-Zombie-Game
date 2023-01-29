@@ -777,6 +777,153 @@ void switchArrow()
     }
 }
 
+void moveZombie(int zombieIndex)
+{
+
+    int currRow = zombies[zombieIndex].getRow();
+    int currCol = zombies[zombieIndex].getCol();
+    int newRow, newCol;
+    string direction;
+
+    string moves[] = {"up","down","left","right"};
+    
+    ClearScreen();
+    drawMap();
+    cout << endl;
+    showStatus(zombieIndex+1);
+    cout << endl;
+
+    while(true)
+    {
+        direction = moves[rand()%4];
+
+        if(direction == "up")
+        {
+            newRow = currRow -1;
+            newCol = currCol;
+        }
+
+        else if(direction == "down")
+        {
+            newRow = currRow + 1;
+            newCol = currCol;
+        }
+
+        else if(direction == "left")
+        {
+            newRow = currRow;
+            newCol = currCol-1;
+        }
+
+        else if(direction == "right")
+        {
+            newRow = currRow;
+            newCol = currCol+1;
+        }
+
+        if (!checkValidMoves(newRow,newCol))
+        {
+            continue;
+        }
+
+        if (checkIsZombie(board[newRow][newCol]))
+        {
+            continue;
+        }
+
+        if (board[newRow][newCol] == 'A')
+        {
+            continue;
+        }
+
+        break;
+    }
+
+    zombies[zombieIndex].setLocation(newRow,newCol);
+    board[currRow][currCol] = ' ';
+    board[newRow][newCol] = '1' + zombieIndex;
+
+    cout << "Zombie " << zombieIndex + 1 << " moves " << direction << endl;
+
+    Pause();
+    ClearScreen();
+    drawMap();
+    cout << endl;
+    showStatus(zombieIndex+1);
+    cout << endl;
+
+    int distance = abs(zombies[zombieIndex].getCol() - alien.getCol()) + abs(zombies[zombieIndex].getRow()-alien.getRow());
+
+    if (distance <= zombies[zombieIndex].getRange())
+    {
+        alien.deductLife(zombies[zombieIndex].getAttack());
+
+        cout << "Zombie " << zombieIndex + 1 << " attacks Alien.\n";
+        cout << "Alien receives a damage of " << zombies[zombieIndex].getAttack() << ".\n";
+
+        if(alien.isAlive())
+        {
+            cout << "Alien is still alive.\n";
+        }
+        else
+        {
+            cout << "Alien is dead.\n";
+        }
+    }
+    else
+    {
+        cout << "Zombie " << zombieIndex + 1 << " is unable to attack Alien.\n";
+        cout << "Alien is too far.\n";
+    }
+
+    Pause();
+
+    ClearScreen();
+    drawMap();
+    cout << endl;
+    showStatus(zombieIndex+1);
+    cout << endl;
+
+    cout << "Zombie " << zombieIndex +1 << "'s turn ends.\n";
+
+    Pause();
+
+    ClearScreen();
+    drawMap();
+    cout << endl;
+    showStatus(zombieIndex+1);
+    cout << endl;
+
+    if(! alien.isAlive())
+    {
+        isGameEnd = true;
+        cout << "Alien lose the game.\n";
+        while(true)
+        {
+            cout << "Play again? (y/n)> " ;
+            char input;
+            cin >> input;
+
+            if (input == 'y' || input == 'Y')
+            {
+                isPlayAgain = true;
+                break;
+            }
+
+            else if (input == 'n' || input == 'N')
+            {
+                isPlayAgain = false;
+                break;
+            }
+
+            else
+            {
+                cout << "Invalid input, try again.\n";
+            }
+        }
+    }
+
+}
 
 int main()
 {
@@ -805,7 +952,18 @@ int main()
             {
                 moveAlien(input);
                 if (isGameEnd) break;
-                
+                for(int z=0; z<zombieCount; z++)
+                {
+                    if(!zombies[z].isAlive()) continue;
+                    
+                    ClearScreen();
+                    drawMap();
+                    cout << endl;
+                    showStatus(z+1);
+                    moveZombie(z);
+                    if (isGameEnd) break;
+                }
+                if(isGameEnd)break;
             }
 
             else if(input == "arrow")
