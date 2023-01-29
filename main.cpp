@@ -17,12 +17,162 @@
 
 using namespace std;
 
+class Zombie
+{
+    private:
+        int life;
+        int attack;
+        int range;
+        int row;
+        int col;
+    
+    public:
+
+        Zombie()
+        {
+            life = 100 + (rand() % 16) * 10; //random 100-250, resolution 10
+            attack = 5 * ((rand() % 4) + 1); //random 5-20, resolution 5
+            range = (rand() % 5) + 1; //random 1-5, resolution 1
+        }
+
+        void display()
+        {
+            cout << "Life " << setw(3) << life << ", Attack " << setw(3) << attack << ", Range" << setw(3) << range;
+        }
+
+        void addAttack (int a)
+        {
+            attack += a;
+        }
+
+        void deductLife(int x)
+        {
+            life = (life - x <= 0) ? 0 : life - x;
+        }
+
+        bool isAlive()
+        {
+            return life > 0;
+        }
+
+        void setLocation(int r, int c)
+        {
+            row = r;
+            col = c;
+        }
+
+        void printLocation()
+        {
+            cout << "Row: " << row << ", Col: " << col << endl;
+        }
+
+        int getRow()
+        {
+            return row;
+        }
+
+        int getCol()
+        {
+            return col;
+        }
+
+        int getRange()
+        {
+            return range;
+        }
+
+        int getAttack()
+        {
+            return attack;
+        }
+};
+
+class Alien
+{
+    private:
+        int life;
+        int attack;
+        int row;
+        int col;
+
+    public:
+
+        Alien()
+        {
+            life = 100;
+            attack = 0;
+        }
+
+        void display()
+        {
+            cout << "Life " << setw(3) << life << ", Attack " << setw(3) << attack;
+        }
+
+        void addAttack(int a)
+        {
+            attack += a;
+        }
+
+        int getAttack()
+        {
+            return attack;
+        }
+
+        void resetAttack()
+        {
+            attack = 0;
+        }
+
+        void addLife(int h)
+        {
+            life = (life + h > 100) ? 100 : life + h;
+        }
+
+        void deductLife(int l)
+        {
+            life = (life - l <= 0) ? 0 : life - l;
+        }
+
+        bool isAlive()
+        {
+            return life > 0;
+        }
+
+        void setLocation(int r, int c)
+        {
+            row = r;
+            col = c;
+        }
+
+        void printLocation()
+        {
+            cout << "Row: " << row << ", Col: " << col << endl;
+        }
+
+        int getRow()
+        {
+            return row;
+        }
+
+        int getCol()
+        {
+            return col;
+        }
+};
+
+
 typedef vector< vector<char> > Board;
+typedef vector<Zombie> ZombieVector;
 
 Board board;
 int row = 5 ;
 int col = 9;
 int zombieCount = 1;
+int curr = 0;
+Alien alien;
+ZombieVector zombies;
+
+char objects[] = {'<','^','v', '>', 'r', 'h', 'p', ' '};
 
 int ClearScreen()
 {
@@ -49,6 +199,59 @@ void resizeBoard()
     for (int i=0; i< row; i++)
     {
         board[i].resize(col,' ');
+    }
+}
+
+bool checkInArray(char c, char arr[], int size)
+{
+    for (int i=0; i<size; i++)
+    {
+        if(arr[i] == c)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool checkAlienZombie(char c)
+{
+    return ! checkInArray(c,objects,8);
+}
+
+char getRandomObject()
+{
+
+    return objects[rand()% 8];
+}
+
+void placeRandomToMap()
+{
+    for(int i=0; i<row; i++)
+    {
+        for(int j=0; j<col; j++)
+        {
+            board[i][j] = getRandomObject();
+        }
+    }
+
+    board[(row-1)/2][(col-1)/2] = 'A';
+    alien.setLocation((row-1)/2,(col-1)/2);
+
+    for(int z=0; z<zombieCount; z++)
+    {
+        int r,c;
+        do
+        {
+            r = rand() % row;
+            c = rand() % col;
+        } while (checkAlienZombie(board[r][c]));
+        
+        board[r][c] = '1'+ z;
+        zombies[z].setLocation(r,c);
+
+
     }
 }
 
@@ -135,7 +338,16 @@ void gameSetup()
         }
     }
 
+    zombies.resize(zombieCount);
+
+    for (int z=0; z<zombieCount; z++)
+    {
+        zombies[z] = Zombie();
+    }
+
     resizeBoard();
+
+    placeRandomToMap();
 
 }
 
@@ -206,13 +418,32 @@ void drawMap()
     cout << endl;
 }
 
+void showStatus(int curr)
+{
+    cout << ((curr == 0) ? " -> " : "    ") << "Alien    : ";
+    alien.display();
+    // alien.printLocation();
+    cout << endl;
+
+    for(int i=0; i<zombieCount; i++)
+    {
+        cout << ((curr == i+1) ? " -> " : "    ") << "Zombie " << i+1 << " : " ;
+        zombies[i].display();
+        // zombies[i].printLocation();
+        cout << endl;
+    }
+}
+
 int main()
 {
+    srand(time(0));
+
     ClearScreen();
     gameSetup();
 
     ClearScreen();
     drawMap();
+    showStatus(curr);
 
     return 0;
 }
