@@ -43,5 +43,5 @@ None.
 
 ## Problems Encountered & Solutions
 
-Problem: Not familiar with Object-Oriented Programming
-Solution: Study from lecture note and other online resources
+#### Problem: Not familiar with Object-Oriented Programming
+#### Solution: Study from lecture note and other online resources
