@@ -16,6 +16,7 @@
 #include<time.h>
 #include<fstream>
 #include<filesystem>
+#include "howtoplay.h"
 
 using namespace std;
 
@@ -208,31 +209,15 @@ int zombieCount = 1;
 int curr = 0;
 Alien alien;
 ZombieVector zombies;
+string menuCommand;
 string gameName = "";
+bool readfilefail = false;
 
 bool isGameEnd = false;
 bool isPlayAgain = false;
 
 char objects[] = {'<','^','v', '>', 'r', 'h', 'p', ' '};
 char arrows[] = {'<','^','v', '>'};
-
-int ClearScreen()
-{
-    #if defined(_WIN32)
-        return std::system("cls");
-    #elif defined(__linux__) || defined(__APPLE__)
-        return std::system("clear");
-    #endif
-}
-
-int Pause()
-{
-    #if defined(_WIN32)
-        return std::system("pause");
-    #elif defined(__linux__) || defined(__APPLE__)
-        return std::system(R"(read -p "Press any key to continue . . . " dummy)");
-    #endif
-}
 
 void resizeBoard()
 {
@@ -275,16 +260,19 @@ void saveGame()
 
 void loadGame()
 {
-// save game before loading
+// save game before loading (only show this when user are inside a game)
     string filename;
     char saveornot;
     string myText;
-    cout << " Do you want to save current game? (y/n): ";
-    cin >> saveornot;
-    if (saveornot == 'y')
+    if (menuCommand != "2")
     {
-        saveGame();
-    }
+        cout << " Do you want to save current game? (y/n): ";
+        cin >> saveornot;
+        if (saveornot == 'y')
+        {
+            saveGame();
+        }
+    }    
 
 // print all saved file
     cout << endl << ".: List of saved game :." << endl;
@@ -302,6 +290,7 @@ void loadGame()
     ifstream MyReadFile("game/" + filename);
     if(MyReadFile.fail()){
         cout << "This file is not existing, please check your spelling." << endl << endl;
+        readfilefail = true;
     }
 
     else
@@ -1109,99 +1098,151 @@ int main()
 {
     srand(time(0));
 
-    while(true)
+    while (true)
     {
         isGameEnd = false;
         isPlayAgain = false;
         alien = Alien();
         ClearScreen();
-        gameSetup();
+        // gameSetup();
 
-        string input;
+        cout << "   .: Alien vs Zombie :.   " << endl;
+        cout << "       1. New game         " << endl;
+        cout << "       2. Load game        " << endl;
+        cout << "       3. How to play      " << endl;
+        cout << "       4. Quit             " << endl
+             << endl;
 
-        while(true)
+        cout << "command> ";
+        cin >> menuCommand;
+
+        if (menuCommand == "1" || menuCommand == "2")
         {
             ClearScreen();
-            drawMap();
-            cout << endl;
-            showStatus(0);
-            cout << endl << "command> ";
-            cin >> input;
-
-            if(input == "up" || input == "down" || input == "left" || input == "right")
+            if (menuCommand == "1")
             {
-                moveAlien(input);
-                if (isGameEnd) break;
-                for(int z=0; z<zombieCount; z++)
-                {
-                    if(!zombies[z].isAlive()) continue;
-                    
-                    ClearScreen();
-                    drawMap();
-                    cout << endl;
-                    showStatus(z+1);
-                    moveZombie(z);
-                    if (isGameEnd) break;
-                }
-                if(isGameEnd)break;
+                gameSetup();
             }
-
-            else if(input == "arrow")
-            {
-                switchArrow();
-                Pause();
-            }
-
-            else if (input == "help")
-            {
-                cout << "Commands\n";
-                cout << "1. up      - Move up.\n";
-                cout << "2. down    - Move down.\n";
-                cout << "3. left    - Move left.\n";
-                cout << "4. right   - Move right.\n";
-                cout << "5. arrow   - Change the direction of an arrow.\n";
-                cout << "6. help    - Display these user commands.\n";
-                cout << "7. save    - Save the game.\n";
-                cout << "8. load    - Load a game.\n";
-                cout << "9. quit    - Quit the game.\n";
-                Pause();
-            }
-
-            else if (input == "save")
-            {
-                saveGame();
-            }
-
-            else if (input == "load")
-            {
-                loadGame();
-            }
-
-            else if (input == "quit")
-            {
-                cout << "Are you sure you want to quit the game? (y/n): ";
-                string confirm;
-                cin >> confirm;
-                if(confirm == "y" || confirm == "Y")
-                {
-                    cout << "Game quit. " << endl;
-                    isGameEnd = true;
-                    isPlayAgain = false;
-                    break;
-                }
-            }
-
+            
             else
             {
-                cout << "Invalid input. Use 'help' command to know about available commands.\n";
-                Pause();
+                loadGame();
+                if (readfilefail == true)
+                {
+                    readfilefail = false;
+                    continue;
+                }
+                
+            }
+            menuCommand = "";
+            string input;
+
+            while (true)
+            {
+                ClearScreen();
+                drawMap();
+                cout << endl;
+                showStatus(0);
+                cout << endl
+                     << "command> ";
+                cin >> input;
+
+                if (input == "up" || input == "down" || input == "left" || input == "right")
+                {
+                    moveAlien(input);
+                    if (isGameEnd)
+                        break;
+                    for (int z = 0; z < zombieCount; z++)
+                    {
+                        ClearScreen();
+                        drawMap();
+                        cout << endl;
+                        showStatus(z + 1);
+                        moveZombie(z);
+                        if (isGameEnd)
+                            break;
+                    }
+                    if (isGameEnd)
+                        break;
+                }
+
+                else if (input == "arrow")
+                {
+                    switchArrow();
+                    Pause();
+                }
+
+                else if (input == "help")
+                {
+                    cout << "Commands\n";
+                    cout << "1. up      - Move up.\n";
+                    cout << "2. down    - Move down.\n";
+                    cout << "3. left    - Move left.\n";
+                    cout << "4. right   - Move right.\n";
+                    cout << "5. arrow   - Change the direction of an arrow.\n";
+                    cout << "6. help    - Display these user commands.\n";
+                    cout << "7. save    - Save the game.\n";
+                    cout << "8. load    - Load a game.\n";
+                    cout << "9. quit    - Quit the game.\n";
+                    Pause();
+                }
+
+                else if (input == "save")
+                {
+                    saveGame();
+                }
+
+                else if (input == "load")
+                {
+                    loadGame();
+                }
+
+                else if (input == "quit")
+                {
+                    cout << "Save your game before quitting." << endl;
+                    Pause();
+                    cout << "Are you sure you want to quit the game? (y/n): ";
+                    string confirm;
+                    cin >> confirm;
+                    if (confirm == "y" || confirm == "Y")
+                    {
+                        cout << "Game quit. " << endl;
+                        isGameEnd = false;
+                        isPlayAgain = true;
+                        break;
+                    }
+                }
+
+                else
+                {
+                    cout << "Invalid input. Use 'help' command to know about available commands.\n";
+                    Pause();
+                }
             }
 
+            if (!isPlayAgain)
+            {
+                break;
+            }
         }
 
-        if(! isPlayAgain)
+        else if (menuCommand == "3")
         {
+            howToPlay();
+        }
+
+        else if (menuCommand == "4")
+        {
+            cout << "Quitting..." << endl;
+            gameName = "";
             break;
+        }
+
+        else
+        {
+            cout << "Invalid input, try again" << endl;
+            Pause();
+            ClearScreen();
         }
     }
     return 0;
