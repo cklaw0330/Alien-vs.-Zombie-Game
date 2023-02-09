@@ -8,7 +8,9 @@ YouTube link: [Video Demo](https://www.youtube.com/watch?v=DGAXANWANtw).
 ## Compilation Instructions
 
 ```
-g++ main.cpp
+(make sure you have changed your directory to the project directory, if not start from step 1, else step 2)
+1. cd PROJECT_DIRECTORY
+2. g++ -std=c++17 main.cpp -o avzGame
 ```
 
 ## User Manual
