@@ -47,6 +47,24 @@ By default, the board is in dimension 5 x 9.
       1 2 3 4 5 6 7 8 9
 ```
 
+You can also set the number of Zombies by yourself.
+As more Zombies in a game, as more challenge and harder for you to win that game.
+
+```
+     +-+-+-+-+-+-+-+-+-+
+   1 |>| |v|v|>|1|^|r|h|
+     +-+-+-+-+-+-+-+-+-+
+   2 |r| |v|^|h|<| | |h|
+     +-+-+-+-+-+-+-+-+-+
+   3 |^|<|^|>|A|p|h|^|<|
+     +-+-+-+-+-+-+-+-+-+
+   4 |p|>|p|p|r|<| | |h|
+     +-+-+-+-+-+-+-+-+-+
+   5 |h| |>|<|h| |h|r|<|
+     +-+-+-+-+-+-+-+-+-+
+      1 2 3 4 5 6 7 8 9
+```
+
 Alphabet A in the middle is representing Alien.
 Number is representing Zombie.
 All the elements inside the board called objects.
@@ -91,13 +109,41 @@ Object:
      +-+-+-+-+-+-+-+-+-+
       1 2 3 4 5 6 7 8 9
 
- -> Alien    : Life 100, Attack   0
+    Alien    : Life 100, Attack   0
     Zombie 1 : Life 200, Attack  15, Range  4
 
 command>
 ```
 
 The lines after the board are showing all the attributes of Alien and Zombies.
+There are 2 attributes of Alien:
+- life (fixed with initial value 100)
+- attack (always be 0 after Alien turns end).
+
+There are 3 attributes of Zombies:
+- life & attack (random value)
+- range (random value based on the dimension of board)
+
+```
+     +-+-+-+-+-+-+-+-+-+
+   1 |>| |v|v|>|1|^|r|h|
+     +-+-+-+-+-+-+-+-+-+
+   2 |r| |v|^|h|<| | |h|
+     +-+-+-+-+-+-+-+-+-+
+   3 |^|<|^|>|A|p|h|^|<|
+     +-+-+-+-+-+-+-+-+-+
+   4 |p|>|p|p|r|<| | |h|
+     +-+-+-+-+-+-+-+-+-+
+   5 |h| |>|<|h| |h|r|<|
+     +-+-+-+-+-+-+-+-+-+
+      1 2 3 4 5 6 7 8 9
+
+ -> Alien    : Life 100, Attack   0
+    Zombie 1 : Life 200, Attack  15, Range  4
+
+command>
+```
+
 The arrow in front of Alien is indicating the turn of Alien in this moment.
 'command>' is the line that let user to give command to the Alien.
 
@@ -134,6 +180,31 @@ Command:
 |                   |  (The player will be asked to confirm his/her decision.)    |
 +-------------------+-------------------------------------------------------------+
 ```
+
+```
+     +-+-+-+-+-+-+-+-+-+
+   1 |>| |v|v|>|1|^|r|h|
+     +-+-+-+-+-+-+-+-+-+
+   2 |r| |v|^|h|<| | |h|
+     +-+-+-+-+-+-+-+-+-+
+   3 |^|<|^|>|A|p|h|^|<|
+     +-+-+-+-+-+-+-+-+-+
+   4 |p|>|p|p|r|<| | |h|
+     +-+-+-+-+-+-+-+-+-+
+   5 |h| |>|<|h| |h|r|<|
+     +-+-+-+-+-+-+-+-+-+
+      1 2 3 4 5 6 7 8 9
+
+ -> Alien    : Life 100, Attack   0
+    Zombie 1 : Life 200, Attack  15, Range  4
+
+command>
+```
+
+There are 3 cases where the Alien will stop to move:
+- hit the border
+- hit the rock
+- hit the Zombie (zombie does not dead)
 
 ```
      +-+-+-+-+-+-+-+-+-+
