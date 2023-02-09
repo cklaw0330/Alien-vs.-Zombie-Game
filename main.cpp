@@ -17,8 +17,15 @@
 #include<fstream>
 #include<filesystem>
 #include "howtoplay.h"
+#include<string>
+#include<cmath>
 
 using namespace std;
+
+int row = 5 ;
+int col = 9;
+int zombieCount = 1;
+int curr = 0;
 
 class Zombie
 {
@@ -26,16 +33,17 @@ class Zombie
         int life;
         int attack;
         int range;
-        int row;
-        int col;
+        int rows;
+        int cols;
     
     public:
 
         Zombie()
         {
+            double rangeValue = sqrt(row*row + col*col)/2;
             life = 100 + (rand() % 16) * 10; //random 100-250, resolution 10
             attack = 5 * ((rand() % 4) + 1); //random 5-20, resolution 5
-            range = (rand() % 5) + 1; //random 1-5, resolution 1
+            range = (rand() % int(rangeValue) + 1); //random value based on the dimension of board
         }
 
         void display()
@@ -60,23 +68,23 @@ class Zombie
 
         void setLocation(int r, int c)
         {
-            row = r;
-            col = c;
+            rows = r;
+            cols = c;
         }
 
         void printLocation()
         {
-            cout << "Row: " << row << ", Col: " << col << endl;
+            cout << "Row: " << rows << ", Col: " << cols << endl;
         }
 
         int getRow()
         {
-            return row;
+            return rows;
         }
 
         int getCol()
         {
-            return col;
+            return cols;
         }
 
         int getRange()
@@ -203,10 +211,6 @@ typedef vector< vector<char> > Board;
 typedef vector<Zombie> ZombieVector;
 
 Board board;
-int row = 5 ;
-int col = 9;
-int zombieCount = 1;
-int curr = 0;
 Alien alien;
 ZombieVector zombies;
 string menuCommand;
@@ -1100,8 +1104,6 @@ int main()
 
     while (true)
     {
-        isGameEnd = false;
-        isPlayAgain = false;
         alien = Alien();
         ClearScreen();
         // gameSetup();
@@ -1118,6 +1120,9 @@ int main()
 
         if (menuCommand == "1" || menuCommand == "2")
         {
+            isGameEnd = false;
+            isPlayAgain = false;
+            while(true){
             ClearScreen();
             if (menuCommand == "1")
             {
@@ -1208,7 +1213,7 @@ int main()
                     {
                         cout << "Game quit. " << endl;
                         isGameEnd = false;
-                        isPlayAgain = true;
+                        isPlayAgain = false;
                         break;
                     }
                 }
@@ -1224,6 +1229,11 @@ int main()
             {
                 break;
             }
+            else
+            {
+                menuCommand = "1";
+            }
+        }
         }
 
         else if (menuCommand == "3")
