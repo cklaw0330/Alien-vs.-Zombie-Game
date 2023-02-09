@@ -15,6 +15,7 @@
 #include<iomanip>
 #include<time.h>
 #include<fstream>
+#include<filesystem>
 
 using namespace std;
 
@@ -207,6 +208,7 @@ int zombieCount = 1;
 int curr = 0;
 Alien alien;
 ZombieVector zombies;
+string gameName = "";
 
 bool isGameEnd = false;
 bool isPlayAgain = false;
@@ -244,10 +246,14 @@ void resizeBoard()
 
 void saveGame()
 {
+    if(gameName != "")
+        {
+            cout << "This game was saved under name \"" << gameName << "\" before." << endl;
+        }
     string filename;
     cout << "Enter the file name to save the current game: ";
     cin >> filename;
-    ofstream MyFile(filename);
+    ofstream MyFile("game/" + filename);
     MyFile << row << endl << col << endl << zombieCount << endl;
     for (int i = 0; i < row; i++)
     {
@@ -262,13 +268,14 @@ void saveGame()
         MyFile << zombies[i].getLife() << endl << zombies[i].getAttack() << endl << zombies[i].getRange() << endl;
     }
     MyFile.close();
-    cout << "Game saved" << endl;
+    cout << "Game saved" << endl << endl;
     Pause();
     ClearScreen();
 }
 
 void loadGame()
 {
+// save game before loading
     string filename;
     char saveornot;
     string myText;
@@ -279,75 +286,100 @@ void loadGame()
         saveGame();
     }
 
-    cout << "Enter the file name to load: ";
+// print all saved file
+    cout << endl << ".: List of saved game :." << endl;
+    int counter = 1;
+    for(const auto & entry : std::filesystem::directory_iterator("./game"))
+    {
+
+        cout << counter++ << ". " << entry.path().filename().generic_string() << endl;
+    }
+
+
+// input load file name
+    cout << endl << "Enter the file name to load: ";
     cin >> filename;
-    ifstream MyReadFile(filename);
-    // MyReadFile >> myText;
-    // cout << myText;
-    int index = 0;
-    while (getline (MyReadFile, myText)) {
-        if (index == 0)
-        {
-            row = stoi(myText);
-            cout << row;
-        }
+    ifstream MyReadFile("game/" + filename);
+    if(MyReadFile.fail()){
+        cout << "This file is not existing, please check your spelling." << endl << endl;
+    }
 
-        else if (index == 1)
-        {
-            col = stoi(myText);
-            cout << col;
-        }
-
-        else if (index == 2)
-        {
-            zombieCount = stoi(myText);
-            cout << zombieCount;
-            zombies.resize(zombieCount);
-        }
-
-        else if (index == 3)
-        {
-            resizeBoard();
-            for (int i = 0; i < row; i++)
+    else
+    {
+        gameName = filename;
+        int index = 0;
+        while (getline (MyReadFile, myText)) {
+            if (index == 0)
             {
-                for (int j = 0; j < col; j++)
+                row = stoi(myText);
+            }
+
+            else if (index == 1)
+            {
+                col = stoi(myText);
+            }
+
+            else if (index == 2)
+            {
+                zombieCount = stoi(myText);
+                zombies.resize(zombieCount);
+            }
+
+            else if (index == 3)
+            {
+                resizeBoard();
+                for (int i = 0; i < row; i++)
                 {
-                    board[i][j] = myText[j+(i*col)];
+                    for (int j = 0; j < col; j++)
+                    {
+                        board[i][j] = myText[j+(i*col)];
+
+                        if(myText[j+(i*col)] == 'A')
+                        {
+                            alien.setLocation(i,j);
+                        }
+
+                        else if(isdigit(myText[j+(i*col)]))
+                        {
+                            zombies[myText[j+(i*col)]-'1'].setLocation(i,j);
+                        }
+                    }
                 }
             }
-        }
 
-        else if (index == 4)
-        {
-            alien.setLife(stoi(myText));
-        }
-
-        else if (index == 5)
-        {
-            alien.setAttack(stoi(myText));
-        }
-
-        else if (index >= 6)
-        {
-            // 6: zombie1 life, 7: zombie1 attack, 8: zombie1 range
-            if (index % 3 == 0)
+            else if (index == 4)
             {
-                zombies[(index-6)/3].setLife(stoi(myText));
+                alien.setLife(stoi(myText));
             }
-            else if (index % 3 == 1)
-            {
-                zombies[(index-6)/3].setAttack(stoi(myText));
-            }
-            else if(index % 3 == 2)
-            {
-                zombies[(index-6)/3].setRange(stoi(myText));
-            }
-        }
 
-        index++;
+            else if (index == 5)
+            {
+                alien.setAttack(stoi(myText));
+            }
+
+            else if (index >= 6)
+            {
+                // 6: zombie1 life, 7: zombie1 attack, 8: zombie1 range
+                if (index % 3 == 0)
+                {
+                    zombies[(index-6)/3].setLife(stoi(myText));
+                }
+                else if (index % 3 == 1)
+                {
+                    zombies[(index-6)/3].setAttack(stoi(myText));
+                }
+                else if(index % 3 == 2)
+                {
+                    zombies[(index-6)/3].setRange(stoi(myText));
+                }
+            }
+
+            index++;
+        }
+        MyReadFile.close();
+        cout << "Game Loaded" << endl << endl;
     }
-    MyReadFile.close();
-    cout << endl;
+    
     Pause();
     ClearScreen();
 }
@@ -416,7 +448,7 @@ void gameSetup()
         cout << "Board Columns  : " << col << endl;
         cout << "Zombie Count   : " << zombieCount << endl;
 
-        cout << endl << "Do you wish to change the game settings (y/n)? =>";
+        cout << endl << "Do you wish to change the game settings (y/n)? => ";
         char choice;
         cin >> choice;
 
@@ -494,6 +526,8 @@ void gameSetup()
     {
         zombies[z] = Zombie();
     }
+
+    gameName = "";
 
     resizeBoard();
 
