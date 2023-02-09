@@ -14,6 +14,7 @@
 #include<climits>
 #include<iomanip>
 #include<time.h>
+#include<fstream>
 
 using namespace std;
 
@@ -81,9 +82,29 @@ class Zombie
             return range;
         }
 
+        void setRange(int ran)
+        {
+           range = ran;
+        }
+
         int getAttack()
         {
             return attack;
+        }
+
+        void setAttack(int a)
+        {
+           attack = a;
+        }
+
+        int getLife()
+        {
+            return life;
+        }
+
+        void setLife(int l)
+        {
+           life = l;
         }
 };
 
@@ -116,6 +137,11 @@ class Alien
         int getAttack()
         {
             return attack;
+        }
+
+        void setAttack(int a)
+        {
+           attack = a;
         }
 
         void resetAttack()
@@ -157,6 +183,16 @@ class Alien
         int getCol()
         {
             return col;
+        }
+
+        int getLife()
+        {
+            return life;
+        }
+
+        void setLife(int l)
+        {
+           life = l;
         }
 };
 
@@ -204,6 +240,116 @@ void resizeBoard()
     {
         board[i].resize(col,' ');
     }
+}
+
+void saveGame()
+{
+    string filename;
+    cout << "Enter the file name to save the current game: ";
+    cin >> filename;
+    ofstream MyFile(filename);
+    MyFile << row << endl << col << endl << zombieCount << endl;
+    for (int i = 0; i < row; i++)
+    {
+        for (int j = 0; j < col; j++)
+        {
+            MyFile << board[i][j];
+        }
+    }
+    MyFile << endl << alien.getLife() << endl << alien.getAttack() << endl;
+    for (int i = 0; i < zombieCount; i++)
+    {
+        MyFile << zombies[i].getLife() << endl << zombies[i].getAttack() << endl << zombies[i].getRange() << endl;
+    }
+    MyFile.close();
+    cout << "Game saved" << endl;
+    Pause();
+    ClearScreen();
+}
+
+void loadGame()
+{
+    string filename;
+    char saveornot;
+    string myText;
+    cout << " Do you want to save current game? (y/n): ";
+    cin >> saveornot;
+    if (saveornot == 'y')
+    {
+        saveGame();
+    }
+
+    cout << "Enter the file name to load: ";
+    cin >> filename;
+    ifstream MyReadFile(filename);
+    // MyReadFile >> myText;
+    // cout << myText;
+    int index = 0;
+    while (getline (MyReadFile, myText)) {
+        if (index == 0)
+        {
+            row = stoi(myText);
+            cout << row;
+        }
+
+        else if (index == 1)
+        {
+            col = stoi(myText);
+            cout << col;
+        }
+
+        else if (index == 2)
+        {
+            zombieCount = stoi(myText);
+            cout << zombieCount;
+            zombies.resize(zombieCount);
+        }
+
+        else if (index == 3)
+        {
+            resizeBoard();
+            for (int i = 0; i < row; i++)
+            {
+                for (int j = 0; j < col; j++)
+                {
+                    board[i][j] = myText[j+(i*col)];
+                }
+            }
+        }
+
+        else if (index == 4)
+        {
+            alien.setLife(stoi(myText));
+        }
+
+        else if (index == 5)
+        {
+            alien.setAttack(stoi(myText));
+        }
+
+        else if (index >= 6)
+        {
+            // 6: zombie1 life, 7: zombie1 attack, 8: zombie1 range
+            if (index % 3 == 0)
+            {
+                zombies[(index-6)/3].setLife(stoi(myText));
+            }
+            else if (index % 3 == 1)
+            {
+                zombies[(index-6)/3].setAttack(stoi(myText));
+            }
+            else if(index % 3 == 2)
+            {
+                zombies[(index-6)/3].setRange(stoi(myText));
+            }
+        }
+
+        index++;
+    }
+    MyReadFile.close();
+    cout << endl;
+    Pause();
+    ClearScreen();
 }
 
 bool checkInArray(char c, char arr[], int size)
@@ -989,12 +1135,12 @@ int main()
 
             else if (input == "save")
             {
-
+                saveGame();
             }
 
             else if (input == "load")
             {
-
+                loadGame();
             }
 
             else if (input == "quit")
