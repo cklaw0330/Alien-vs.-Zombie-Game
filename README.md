@@ -3,7 +3,7 @@
 
 ![Screenshot](screenshot.png "Game screenshot")
 
-YouTube link: [Video Demo](https://www.youtube.com/watch?v=DGAXANWANtw).
+YouTube link: [Video Demo](https://www.youtube.com/watch?v=QfFkYq-FllM).
 
 ## Compilation Instructions
 
